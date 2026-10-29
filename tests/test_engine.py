@@ -186,6 +186,20 @@ class VerifierTests(unittest.TestCase):
         self.assertEqual(len(calls), 2)
         self.assertEqual(summary["mode"], "exact+ai")
 
+    def test_asks_again_after_malformed_json(self):
+        calls = []
+
+        class Broken(FakeResponse):
+            def json(self):
+                return {"candidates": [{"content": {"parts": [{"text": '{"findings": [{"quote": "x" "rule_code"'}]}}]}
+
+        def broken_then_ok(*a, **k):
+            calls.append(1)
+            return Broken({}) if len(calls) == 1 else FakeResponse({"findings": []})
+        _, summary = scan_text("Volta Buds Air are here.", RULESET, FACTS, "Ad", today=TODAY, _post=broken_then_ok)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(summary["mode"], "exact+ai")
+
     def test_ai_failure_falls_back_offline(self):
         def boom(*a, **k):
             raise ConnectionError("network down")

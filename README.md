@@ -99,7 +99,7 @@ Render gives each workspace 750 free instance hours a month, enough for one serv
 ## Tests and accuracy
 
 ```bash
-python -m unittest discover tests     # 29 tests: engine, verifier with a faked AI, AI retry, full API workflow, roles
+python -m unittest discover tests     # 30 tests: engine, verifier with a faked AI, AI retry, full API workflow, roles
 python scripts/benchmark.py           # planted-error benchmark → BENCHMARK.md
 ```
 

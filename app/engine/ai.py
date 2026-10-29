@@ -82,30 +82,43 @@ def call_json(system, user, _post=None):
     if not c["enabled"]:
         raise AIUnavailable("No API key configured")
     post = _post or requests.post
+    if c["provider"] == "gemini":
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{c['model']}:generateContent"
+        body = {
+            "systemInstruction": {"parts": [{"text": system}]},
+            "contents": [{"role": "user", "parts": [{"text": user}]}],
+            "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
+        }
+        headers = {"x-goog-api-key": c["key"]}
+
+        def reply_text(r):
+            return "".join(p.get("text", "") for p in r.json()["candidates"][0]["content"]["parts"])
+    else:
+        url = f"{c['base_url']}/chat/completions"
+        body = {
+            "model": c["model"],
+            "temperature": 0.2,
+            "response_format": {"type": "json_object"},
+            "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+        }
+        headers = {"Authorization": f"Bearer {c['key']}"}
+
+        def reply_text(r):
+            return r.json()["choices"][0]["message"]["content"]
     try:
-        if c["provider"] == "gemini":
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{c['model']}:generateContent"
-            body = {
-                "systemInstruction": {"parts": [{"text": system}]},
-                "contents": [{"role": "user", "parts": [{"text": user}]}],
-                "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
-            }
-            r = _post_with_retry(post, url, body, {"x-goog-api-key": c["key"]})
+        started = time.monotonic()
+        r = _post_with_retry(post, url, body, headers)
+        r.raise_for_status()
+        try:
+            return _extract_json(reply_text(r))
+        except ValueError:
+            # The model sometimes returns malformed JSON. Ask once more instead of guessing a repair,
+            # but only if the first answer was quick, so the time limits above still hold.
+            if time.monotonic() - started > TIMEOUT:
+                raise
+            r = post(url, json=body, headers=headers, timeout=TIMEOUT)
             r.raise_for_status()
-            data = r.json()
-            text = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
-        else:
-            url = f"{c['base_url']}/chat/completions"
-            body = {
-                "model": c["model"],
-                "temperature": 0.2,
-                "response_format": {"type": "json_object"},
-                "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            }
-            r = _post_with_retry(post, url, body, {"Authorization": f"Bearer {c['key']}"})
-            r.raise_for_status()
-            text = r.json()["choices"][0]["message"]["content"]
-        return _extract_json(text)
+            return _extract_json(reply_text(r))
     except AIUnavailable:
         raise
     except Exception as exc:  # network, quota, bad JSON: all fall back to offline mode
