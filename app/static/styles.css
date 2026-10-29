@@ -168,7 +168,16 @@ nav { display: flex; flex-direction: column; gap: 2px; }
 .ws-head p { margin: 0; }
 .goal { margin-top: .3rem !important; }
 .ws-status { display: flex; flex-direction: column; align-items: flex-end; gap: .3rem; }
-.scanstrip { display: flex; flex-wrap: wrap; gap: .35rem 1.1rem; font-size: .82rem; color: var(--quiet); padding: .55rem 0 .9rem; border-bottom: 1px solid var(--rule); margin-bottom: 1.25rem; }
+.scanstrip { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem 1.1rem; font-size: .82rem; color: var(--quiet); background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--r-md); padding: .6rem .9rem; margin: .4rem 0 1.25rem; }
+.scan-when { color: var(--ink); font-weight: 600; }
+.scan-counts { display: inline-flex; gap: .3rem; }
+.tally { font-weight: 600; padding: .1rem .5rem; border-radius: 999px; }
+.tally-high { color: var(--high); background: var(--high-tint); }
+.tally-med { color: var(--med); background: var(--med-tint); }
+.tally-low { color: var(--low); background: var(--low-tint); }
+.scan-verifier { color: var(--ok); background: var(--ok-tint); font-weight: 600; padding: .15rem .6rem; border-radius: 999px; border: 1px solid #b9dcc5; }
+.scan-verifier-caught { color: var(--med); background: var(--med-tint); border-color: #ecd2a8; }
+.scanstrip .warn { flex-basis: 100%; }
 .ws-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr); gap: 1.5rem; align-items: start; }
 .ws-side { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; padding-right: 4px; }
 
@@ -191,8 +200,8 @@ mark { background: none; color: inherit; padding: 0 1px; border-radius: 2px; cur
 .actions .hint { width: 100%; margin: 0; }
 .review-panel { margin-top: 1.25rem; border-left: 4px solid var(--blue); }
 
-.tabs { display: flex; gap: .15rem; flex-wrap: wrap; border-bottom: 1px solid var(--rule); margin-bottom: .9rem; position: sticky; top: 0; background: var(--desk); z-index: 1; }
-.tab { border: 0; background: none; font: 500 .86rem var(--sans); padding: .55rem .6rem; color: var(--quiet); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs { display: flex; gap: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--rule); margin-bottom: .9rem; position: sticky; top: 0; background: var(--desk); z-index: 1; }
+.tab { border: 0; background: none; font: 500 .84rem var(--sans); padding: .55rem .45rem; white-space: nowrap; flex: none; color: var(--quiet); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
 .tab.on { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
 
 .finding { border-left-width: 4px; cursor: pointer; }

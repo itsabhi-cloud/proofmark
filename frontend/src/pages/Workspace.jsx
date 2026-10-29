@@ -173,13 +173,15 @@ function ScanStrip({ scan, version, onRescan, rescanning }) {
   const v = s.verifier;
   const aiFailed = s.mode !== "exact+ai" && s.ai?.enabled && s.ai_error;
   return (
-    <div className="scanstrip">
-      <span>
-        Scan of v{version} · {timeAgo(scan.created_at)}
+    <div className="scanstrip" aria-label="Scan summary">
+      <span className="scan-when">
+        Scan of v{version}, {timeAgo(scan.created_at)}
       </span>
-      <span className="count-high">{c.high || 0} high</span>
-      <span className="count-med">{c.medium || 0} medium</span>
-      <span className="count">{c.low || 0} low</span>
+      <span className="scan-counts">
+        <span className="tally tally-high">{c.high || 0} high</span>
+        <span className="tally tally-med">{c.medium || 0} medium</span>
+        <span className="tally tally-low">{c.low || 0} low</span>
+      </span>
       <span>{s.rules_checked} rules checked</span>
       <span title="How findings were produced">
         {s.mode === "exact+ai"
@@ -187,10 +189,11 @@ function ScanStrip({ scan, version, onRescan, rescanning }) {
           : aiFailed ? "Exact checks + word lists" : "Exact checks + word lists (AI off)"}
       </span>
       {v ? (
-        <span title="The verifier drops AI findings whose quote is not in the draft">
-          Verifier: {v.kept} of {v.ai_suggested} AI findings kept
-          {v.dropped_quote_not_found ? `, ${v.dropped_quote_not_found} dropped` : ""}
-          {v.needs_human ? `, ${v.needs_human} need a human` : ""}
+        <span className={`scan-verifier ${v.dropped_quote_not_found || v.needs_human ? "scan-verifier-caught" : ""}`}
+          title="The verifier drops AI findings whose quoted words are not in the draft">
+          <span aria-hidden="true">✓</span> Verifier kept {v.kept} of {v.ai_suggested} AI findings
+          {v.dropped_quote_not_found ? `, dropped ${v.dropped_quote_not_found}` : ""}
+          {v.needs_human ? `, ${v.needs_human} sent to a human` : ""}
         </span>
       ) : null}
       {s.masked_items ? <span>{s.masked_items} personal details masked before AI</span> : null}
@@ -488,7 +491,7 @@ export default function Workspace({ id }) {
     ["issues", `Issues (${issues.filter((f) => f.status === "open").length})`],
     ["claims", `Claim receipts (${claims.length})`],
     ["checks", `Human checks (${detail.human_checks.length})`],
-    ["history", `History (v${current.number})`],
+    ["history", "History"],
     ["comments", `Comments (${detail.comments.length})`],
   ];
 
