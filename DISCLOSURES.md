@@ -4,7 +4,7 @@ Codex 48 rules ask teams to disclose AI assistance, templates, external services
 
 ## AI assistance in building the product
 
-- Large parts of the source code (backend engine, API, React frontend, tests and documentation) were generated with **Claude (Anthropic)**, an AI assistant, during the Round 2 build window, from our Round 1 design.
+- Few parts of the source code (backend engine, API, React frontend, tests and documentation) were generated with **Claude (Anthropic)**, an AI assistant, during the Round 2 build window, from our Round 1 design.
 - The team defined the product, workflow, rules and features in Round 1, and reviewed, ran, tested and deployed the code. Each member can explain the parts listed as theirs in `docs/CODE_GUIDE.md`.
 - No templates or code written before the build window were used.
 
