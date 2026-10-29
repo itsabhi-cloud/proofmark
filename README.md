@@ -4,7 +4,7 @@
 
 Built by team **CODE TWINS** (Puneet Sreevatsal Jagadam, Abhi Shiktha Rudravaram) for Codex 48, problem statement by Inkloom AI.
 
-Live demo: `<your Render link>` · Demo brand: *Volta Audio* (fictional)
+**Live app:** https://proofmark-7972.onrender.com · **Repository:** https://github.com/itsabhi-cloud/proofmark · Demo brand: *Volta Audio* (fictional)
 
 ---
 
