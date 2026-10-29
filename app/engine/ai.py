@@ -22,8 +22,9 @@ import requests
 
 from .text_utils import find_span
 
-# A rewrite can make up to 4 AI calls; 4 x 25 s stays under Gunicorn's 120 s request limit.
-TIMEOUT = float(os.environ.get("LLM_TIMEOUT", "25"))
+# Per attempt. Each call may try twice (12 + 2 + 12 s), and a rewrite makes up to 4 calls:
+# 4 x 26 s stays under Gunicorn's 120 s request limit.
+TIMEOUT = float(os.environ.get("LLM_TIMEOUT", "12"))
 RETRY_STATUS = (429, 503)  # free-tier "too many requests" / "model busy": worth one more try
 RETRY_WAIT = 2.0
 
@@ -64,9 +65,12 @@ def _extract_json(raw):
 
 
 def _post_with_retry(post, url, body, headers):
-    """POST once; if the provider says it is rate-limited or busy, wait briefly and try once more."""
-    r = post(url, json=body, headers=headers, timeout=TIMEOUT)
-    if getattr(r, "status_code", 200) in RETRY_STATUS:
+    """POST once; if the provider is rate-limited, busy or too slow, wait briefly and try once more."""
+    try:
+        r = post(url, json=body, headers=headers, timeout=TIMEOUT)
+    except requests.Timeout:  # slow answers are usually one-off spikes; a fresh request is often quick
+        r = None
+    if r is None or getattr(r, "status_code", 200) in RETRY_STATUS:
         time.sleep(RETRY_WAIT)
         r = post(url, json=body, headers=headers, timeout=TIMEOUT)
     return r

@@ -41,7 +41,7 @@ Paste-ready answers for the Codex 48 Round 2 form and report.
 
 **Demo seed:** 19 rules (14 exact, 3 AI, 2 human-only), 9 approved facts (1 confidential), 5 demo accounts.
 
-**Reliability details:** the AI call has a 25-second limit and one retry on HTTP 429/503, so a full AI rewrite (up to 4 calls) finishes inside Gunicorn's 120-second limit; any other AI error falls back to offline checks. Session cookies are HttpOnly, SameSite=Lax and Secure in production; security headers (nosniff, frame deny, same-origin referrer) are set on every response.
+**Reliability details:** each AI attempt has a 12-second limit, and a call is retried once if Gemini times out or replies 429/503, so a full AI rewrite (up to 4 calls) finishes inside Gunicorn's 120-second limit; any other AI error falls back to offline checks. On the live site we measured most scans at 2 to 6 seconds, with occasional slow spikes from the free Gemini tier. Session cookies are HttpOnly, SameSite=Lax and Secure in production; security headers (nosniff, frame deny, same-origin referrer) are set on every response.
 
 ## 4. Changes from the Round 1 plan, and why
 
@@ -54,7 +54,7 @@ Paste-ready answers for the Codex 48 Round 2 form and report.
 
 **Changes made during final testing (29 Oct 2026):**
 - The default model alias `gemini-flash-latest` had started pointing to a slower "thinking" model (42 to 72 seconds per scan, over our time limit), so AI scans were silently falling back. We pinned `gemini-3.5-flash-lite` (about 2 seconds per scan).
-- Added one automatic retry when Gemini says it is rate-limited or busy, a shorter per-call timeout, and a unit test for the retry.
+- Added one automatic retry when Gemini is rate-limited, busy or too slow, a shorter per-attempt time limit, and unit tests for both retries.
 - Interface: a "Start here" tour on the sign-in screen, plain-language messages when the AI falls back with a "Try the AI again" button, waiting messages during scans and rewrites, a "Back to drafts" link on error pages, and a clearer warning on the demo reset.
 - Bug fix: "Submit for review" is now blocked while the creator has unapplied fix choices (before, those choices were silently lost).
 - Benchmark: added an AI-mode section next to the offline results.
@@ -67,7 +67,7 @@ Paste-ready answers for the Codex 48 Round 2 form and report.
 
 ## 6. Testing evidence and honest limits
 
-- **Automated tests:** 28 passing (`python -m unittest discover tests`): 22 engine tests (claims, exact rules, fixes, compiler, verifier with a faked AI, AI fallback, AI retry, confidential facts not sent to the AI) and 6 API tests (full workflow and role permissions).
+- **Automated tests:** 29 passing (`python -m unittest discover tests`): 23 engine tests (claims, exact rules, fixes, compiler, verifier with a faked AI, AI fallback, AI retries, confidential facts not sent to the AI) and 6 API tests (full workflow and role permissions).
 - **Planted-error benchmark** (30 drafts, see `BENCHMARK.md`):
   - Offline: 29/29 planted errors caught, 0 false alarms, 0/3 hard cases.
   - With AI (one run): 27/29 caught, 3 false alarms, 2/3 hard cases.

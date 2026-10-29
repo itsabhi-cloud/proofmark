@@ -14,13 +14,13 @@ A draft goes through a pipeline: **exact checks → claim receipts → (optional
 | --- | --- | --- |
 | `app/engine/exact.py` | One function per rule type (`banned`, `term_case`, `required`, `pattern`, `link_text`, `alt_text`, `all_caps`, `readability`) plus the confidential-leak check. Each returns findings with `start`/`end` character offsets. | `_flex_pattern` lets "Volta Audio" also match "volta-audio" and "VoltaAudio". `match_case` keeps capital letters when replacing. |
 | `app/engine/claims.py` | Finds numbers with units (`NUMBER_UNIT_RE`), prices (`CURRENCY_RE`) and superlatives, then picks the approved fact with the same unit whose keywords best match the claim's **clause**, falling back to the sentence. | `max` facts: a claim may be lower, never higher. `exact` facts (prices, warranty) must match. Expired facts make the claim unbacked. AI never compares numbers. |
-| `app/engine/ai.py` | `call_json` talks to Gemini or an OpenAI-compatible API and forces JSON output, retrying once on 429/503. `verify_findings` is the trust layer. | Verifier rules: quote must exist in the draft, else dropped; rule code must be an approved AI rule, else "needs human judgement". Tested with a fake AI in `tests/test_engine.py`. |
+| `app/engine/ai.py` | `call_json` talks to Gemini or an OpenAI-compatible API and forces JSON output, retrying once on a timeout, 429 or 503. `verify_findings` is the trust layer. | Verifier rules: quote must exist in the draft, else dropped; rule code must be an approved AI rule, else "needs human judgement". Tested with a fake AI in `tests/test_engine.py`. |
 | `app/engine/scan.py` | `scan_text` runs the whole pipeline and dedupes (exact findings win over AI on the same words). `apply_fixes` applies suggestions right-to-left so offsets stay valid. `rewrite_draft` re-scans every proposal and retries once. | Why right-to-left: changing text at the start would shift every later offset. |
 | `app/engine/compiler.py` | AI compiler with validation (`_clean`), and an offline regex compiler (`heuristic_compile`). | Any invalid AI rule becomes a safe "human" rule instead of breaking. Vague words list marks rules unclear. |
 | `app/engine/text_utils.py` | Sentence splitting, Flesch reading ease, `mask_pii`, keyword retrieval. | Masking keeps the same length so AI offsets still line up with the original text. |
 | `app/api.py` | Every endpoint. `login_required(*roles)` checks the role on the server. | Creators can't open others' drafts; reviewers can't approve their own; approval needs the human checks; drafts lock in review. |
 | `app/db.py`, `app/services.py`, `app/seed.py` | Schema, business logic, demo data. | Insights "likely unclear" = a rule overridden 2+ times with at least one "Rule unclear" reason. |
-| `tests/`, `scripts/benchmark.py` | 28 tests and the planted-error benchmark. | Be honest that the benchmark was written alongside the rules (see BENCHMARK.md). |
+| `tests/`, `scripts/benchmark.py` | 29 tests and the planted-error benchmark. | Be honest that the benchmark was written alongside the rules (see BENCHMARK.md). |
 
 ## Abhi: frontend, workflow, UX
 

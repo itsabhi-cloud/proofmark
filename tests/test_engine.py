@@ -169,6 +169,23 @@ class VerifierTests(unittest.TestCase):
         self.assertEqual(len(calls), 2)
         self.assertEqual(summary["mode"], "exact+ai")
 
+    def test_retries_once_after_timeout(self):
+        import requests
+        calls = []
+
+        def slow_then_ok(*a, **k):
+            calls.append(1)
+            if len(calls) == 1:
+                raise requests.ReadTimeout("slow")
+            return FakeResponse({"findings": []})
+        wait, ai.RETRY_WAIT = ai.RETRY_WAIT, 0
+        try:
+            _, summary = scan_text("Volta Buds Air are here.", RULESET, FACTS, "Ad", today=TODAY, _post=slow_then_ok)
+        finally:
+            ai.RETRY_WAIT = wait
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(summary["mode"], "exact+ai")
+
     def test_ai_failure_falls_back_offline(self):
         def boom(*a, **k):
             raise ConnectionError("network down")
