@@ -1,0 +1,17 @@
+{
+  "name": "proofmark-frontend",
+  "private": true,
+  "version": "0.2.0",
+  "description": "React frontend for Proofmark. Builds into ../app/static/app.js",
+  "scripts": {
+    "build": "esbuild src/main.jsx --bundle --minify --jsx=automatic --loader:.js=jsx --target=es2020 --outfile=../app/static/app.js --define:process.env.NODE_ENV='\"production\"'",
+    "dev": "esbuild src/main.jsx --bundle --jsx=automatic --loader:.js=jsx --outfile=../app/static/app.js --watch"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
